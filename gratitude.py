@@ -1,27 +1,25 @@
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+import os
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
 
-def send_gratitude_email(smtp_host, smtp_port, smtp_user, smtp_pass, to_email, subject, body):
+def send_gratitude_email(sendgrid_api_key, to_email, subject, body):
     """
-    Connects to an SMTP server and sends a gratitude email.
+    Sends an email using the SendGrid API.
     """
-    # Create the email message
-    message = MIMEMultipart()
-    message["From"] = smtp_user
-    message["To"] = to_email
-    message["Subject"] = subject
-    message.attach(MIMEText(body, "plain"))
+    # The 'from_email' must be a verified sender in your SendGrid account.
+    # For this test, we can use the same email you send to.
+    from_email = os.getenv("SMTP_USER") 
 
+    message = Mail(
+        from_email=from_email,
+        to_emails=to_email.split(','),
+        subject=subject,
+        plain_text_content=body
+    )
     try:
-        # Connect to the server and send the email
-        with smtplib.SMTP(smtp_host, smtp_port) as server:
-            server.starttls()  # Secure the connection
-            server.login(smtp_user, smtp_pass)
-            server.sendmail(smtp_user, to_email.split(','), message.as_string())
-        print("Successfully sent the gratitude email.")
+        sg = SendGridAPIClient(sendgrid_api_key)
+        response = sg.send(message)
+        print(f"Email sent via SendGrid, status code: {response.status_code}")
     except Exception as e:
-        print(f"Failed to send email: {e}")
-        # Re-raise the exception to ensure the error is logged in Render
+        print(f"Failed to send email via SendGrid: {e}")
         raise e
-

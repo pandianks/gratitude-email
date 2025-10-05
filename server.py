@@ -8,16 +8,13 @@ app = Flask(__name__)
 def send_email_in_background():
     """This function runs in the background to send the email."""
     try:
+        # Note: We now pass the SendGrid API key instead of SMTP details
         send_gratitude_email(
-            smtp_host=os.getenv("SMTP_HOST"),
-            smtp_port=int(os.getenv("SMTP_PORT")),
-            smtp_user=os.getenv("SMTP_USER"),
-            smtp_pass=os.getenv("SMTP_PASS"),
+            sendgrid_api_key=os.getenv("SENDGRID_API_KEY"),
             to_email=os.getenv("TO_EMAIL"),
             subject=os.getenv("SUBJECT"),
             body=os.getenv("BODY"),
         )
-        print("Email sending task completed in background.")
     except Exception as e:
         print(f"Error in background email thread: {e}")
 
